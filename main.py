@@ -9,7 +9,7 @@ import py_crepe
 import datetime
 import numpy as np
 import data_helpers
-np.random.seed(0123)  # for reproducibility
+np.random.seed(123)  # for reproducibility
 
 # set parameters:
 
@@ -54,7 +54,7 @@ model = py_crepe.model(filter_kernels, dense_outputs, maxlen, vocab_size,
 
 print('Fit model...')
 initial = datetime.datetime.now()
-for e in xrange(nb_epoch):
+for e in range(nb_epoch):
     xi, yi = data_helpers.shuffle_matrix(xt, yt)
     xi_test, yi_test = data_helpers.shuffle_matrix(x_test, y_test)
     if subset:
@@ -90,7 +90,7 @@ for e in xrange(nb_epoch):
     test_accuracy = 0.0
     test_loss = 0.0
     test_step = 1
-    
+
     for x_test_batch, y_test_batch in test_batches:
         f_ev = model.test_on_batch(x_test_batch, y_test_batch)
         test_loss += f_ev[0]

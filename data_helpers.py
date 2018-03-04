@@ -27,7 +27,7 @@ def load_ag_data():
 def mini_batch_generator(x, y, vocab, vocab_size, vocab_check, maxlen,
                          batch_size=128):
 
-    for i in xrange(0, len(x), batch_size):
+    for i in range(0, len(x), batch_size):
         x_sample = x[i:i + batch_size]
         y_sample = y[i:i + batch_size]
 
