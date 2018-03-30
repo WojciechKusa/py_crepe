@@ -1,48 +1,60 @@
+"""Crepe class module."""
 from keras.models import Model
 from keras.optimizers import SGD
 from keras.layers import Input, Dense, Dropout, Flatten
 from keras.layers.convolutional import Conv1D, MaxPooling1D
 
-def model(filter_kernels, dense_outputs, maxlen, vocab_size, filters,
-          cat_output):
-    #Define what the input shape looks like
-    inputs = Input(shape=(maxlen, vocab_size), name='input', dtype='float32')
+class Crepe(object):
+    """Char CNN model."""
+    def __init__(self):
+        super(Crepe, self).__init__()
 
-    #All the convolutional layers...
-    conv = Conv1D(filters=filters, kernel_size=filter_kernels[0],
-                         padding='valid', activation='relu',
-                         input_shape=(maxlen, vocab_size))(inputs)
-    conv = MaxPooling1D(pool_size=3)(conv)
 
-    conv1 = Conv1D(filters=filters, kernel_size=filter_kernels[1],
-                          padding='valid', activation='relu')(conv)
-    conv1 = MaxPooling1D(pool_size=3)(conv1)
+    @staticmethod
+    def build(filter_kernels, dense_layer_units, maxlen, vocab_size, filters,
+              output_size, loss='categorical_crossentropy', optimizer='adam'):
+        """builds model."""
+        #Define what the input shape looks like
+        inputs = Input(shape=(maxlen, vocab_size), name='input', dtype='float32')
 
-    conv2 = Conv1D(filters=filters, kernel_size=filter_kernels[2],
-                          padding='valid', activation='relu')(conv1)
+        #All the convolutional layers...
+        conv1 = Conv1D(filters=filters, kernel_size=filter_kernels[0],
+                             padding='valid', activation='relu',
+                             input_shape=(maxlen, vocab_size))(inputs)
+        conv1 = MaxPooling1D(pool_size=3)(conv1)
 
-    conv3 = Conv1D(filters=filters, kernel_size=filter_kernels[3],
-                          padding='valid', activation='relu')(conv2)
+        conv2 = Conv1D(filters=filters, kernel_size=filter_kernels[1],
+                              padding='valid', activation='relu')(conv1)
+        conv2 = MaxPooling1D(pool_size=3)(conv2)
 
-    conv4 = Conv1D(filters=filters, kernel_size=filter_kernels[4],
-                          padding='valid', activation='relu')(conv3)
+        conv3 = Conv1D(filters=filters, kernel_size=filter_kernels[2],
+                       padding='valid', activation='relu')(conv2)
 
-    conv5 = Conv1D(filters=filters, kernel_size=filter_kernels[5],
-                          padding='valid', activation='relu')(conv4)
-    conv5 = MaxPooling1D(pool_size=3)(conv5)
-    conv5 = Flatten()(conv5)
+        conv4 = Conv1D(filters=filters, kernel_size=filter_kernels[3],
+                       padding='valid', activation='relu')(conv3)
 
-    #Two dense layers with dropout of .5
-    z = Dropout(0.5)(Dense(dense_outputs, activation='relu')(conv5))
-    z = Dropout(0.5)(Dense(dense_outputs, activation='relu')(z))
+        conv5 = Conv1D(filters=filters, kernel_size=filter_kernels[4],
+                       padding='valid', activation='relu')(conv4)
 
-    #Output dense layer with softmax activation
-    pred = Dense(cat_output, activation='softmax', name='output')(z)
+        conv6 = Conv1D(filters=filters, kernel_size=filter_kernels[5],
+                       padding='valid', activation='relu')(conv5)
+        conv6 = MaxPooling1D(pool_size=3)(conv6)
+        conv6 = Flatten()(conv6)
 
-    model = Model(inputs=inputs, outputs=pred)
+        #Two dense layers with dropout of .5
+        z = Dropout(0.5)(Dense(dense_layer_units, activation='relu')(conv6))
+        z = Dropout(0.5)(Dense(dense_layer_units, activation='relu')(z))
 
-    sgd = SGD(lr=0.01, momentum=0.9)
-    model.compile(loss='categorical_crossentropy', optimizer=sgd,
-                  metrics=['accuracy'])
+        #Output dense layer with softmax activation
+        output = Dense(output_size, activation='softmax', name='output')(z)
 
-    return model
+        model = Model(inputs=inputs, outputs=output)
+
+        if optimizer == 'sgd':
+            optimizer = SGD(lr=0.01, momentum=0.9)
+
+        model.compile(loss=loss,
+                      optimizer=optimizer,
+                      metrics=['accuracy'])
+
+        return model

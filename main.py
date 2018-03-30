@@ -5,7 +5,7 @@ Run on GPU: THEANO_FLAGS=mode=FAST_RUN,device=gpu,floatX=float32 python main.py
 from __future__ import print_function
 from __future__ import division
 import json
-import py_crepe
+from py_crepe import Crepe
 import datetime
 import numpy as np
 import data_helpers
@@ -31,7 +31,7 @@ dense_outputs = 1024
 #Conv layer kernel size
 filter_kernels = [7, 7, 3, 3, 3, 3]
 #Number of units in the final output layer. Number of classes.
-cat_output = 4
+output_size = 4
 
 #Compile/fit params
 batch_size = 80
@@ -49,8 +49,9 @@ test_data = data_helpers.encode_data(x_test, maxlen, vocab, vocab_size, check)
 
 print('Build model...')
 
-model = py_crepe.model(filter_kernels, dense_outputs, maxlen, vocab_size,
-                       nb_filter, cat_output)
+model = Crepe.build(filter_kernels, dense_outputs, maxlen, vocab_size,
+                    nb_filter, dense_layer_units,
+                    loss='categorical_crossentropy', optimizer='adam')
 
 print('Fit model...')
 initial = datetime.datetime.now()
